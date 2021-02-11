@@ -1,18 +1,18 @@
 Год появления Java?
-1996
-1999
-2000
-1995
+1.1996
+2.1999
+3.2000
+4.1995
 1
 Функция для вывода на консоль?
-show
-write
-println
-writeLine
+1.show
+2.write
+3.println
+4.writeLine
 3
 Функция разбиения строки на слова?
-strip
-lower
-split
-parse
+1.strip
+2.lower
+3.split
+4.parse
 3
