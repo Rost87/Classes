@@ -1,10 +1,5 @@
 package com.company;
 
-import java.io.File;
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.Scanner;
-
 public class BankDeposit {
 
     private String name;
@@ -26,7 +21,13 @@ public class BankDeposit {
                 "\n Минимальная сумма вклада: " + minDeposit);
     }
 
-   public String getName() {
+    @Override
+    public String toString() {
+        return "Название вклада: " + name + "\n Cтавка: " + rate + "\n Максимальный срок вклада: " + maxTime +
+                "\n Минимальная сумма вклада: " + minDeposit;
+    }
+
+    public String getName() {
         return name;
     }
 
@@ -35,70 +36,19 @@ public class BankDeposit {
         return result;
     }
 
-    static boolean checkBankDeposit(Double personDepositSumma, Integer personDepositTime, BankDeposit bD){
-        return (personDepositSumma >= bD.minDeposit) && (personDepositTime <= bD.maxTime);
+    public Double getRate() {
+        return rate;
     }
 
-    public static void main(String[] args) {
+    public Integer getMaxTime() {
+        return maxTime;
+    }
 
-        Scanner myScanner = new Scanner(System.in);
-        ArrayList<BankDeposit> arrBankDeposits = new ArrayList<>();
-        String personDepositName;
-        Double personDepositSumma;
-        Integer personDepositTime;
-        BankDeposit personDeposit = new BankDeposit("Не выбран", 0d, 0, 0d);
-        boolean rightDepositName = false;
+    public Double getMinDeposit() {
+        return minDeposit;
+    }
 
-        try (Scanner scanner = new Scanner(new File("Deposits.txt"))){
-            while (scanner.hasNext()) {
-                String[] depositInfo = scanner.nextLine().split(" ");
-                BankDeposit bD = new BankDeposit(depositInfo[0], Double.parseDouble(depositInfo[1]), Integer.parseInt(depositInfo[2]), Double.parseDouble(depositInfo[3]));
-                arrBankDeposits.add(bD);
-            }
-
-        }catch (Exception exc){
-
-        }
-
-        System.out.println("Доступные вклады: ");
-        for (BankDeposit bD: arrBankDeposits) {
-            System.out.println(bD.getName());
-        }
-
-        System.out.println("Выберите вклад");
-        personDepositName = myScanner.nextLine();
-
-        for (BankDeposit bD: arrBankDeposits) {
-            if (bD.getName().equals(personDepositName)) {
-                System.out.println("Описание вклада: ");
-                bD.print();
-                personDeposit = bD;
-                rightDepositName = true;
-                break;
-            }
-
-        }
-
-        if (rightDepositName){
-
-            System.out.println("Введите сумму вклада: ");
-            personDepositSumma = Double.parseDouble(myScanner.nextLine());
-            System.out.println("Введите кол-во дней вклада: ");
-            personDepositTime = Integer.parseInt(myScanner.nextLine());
-
-            if(checkBankDeposit(personDepositSumma, personDepositTime, personDeposit)){
-                System.out.println("Сумма вклада, по истечении " + personDepositTime + " дней составит: " +personDeposit.calculate(personDepositSumma, personDepositTime));
-            } else{
-                System.out.println("Выбранный вклад " + personDeposit.getName() + " не соответствует введенным сумме или сроку вклада");
-            }
-
-        } else{
-            System.out.println("Вклада, с указанным названием, не существует");
-        }
-
-
-
-
-
+    public void setName(String name) {
+        this.name = name;
     }
 }
