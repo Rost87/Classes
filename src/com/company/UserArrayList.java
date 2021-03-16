@@ -53,14 +53,12 @@ public class UserArrayList {
             a = Arrays.copyOf(a, size * 2);
         }
 
-        if(i != size) {
-            for (int j = size; j > i; j--) {
-                a[j] = a[j - 1];
-            }
+        for (int j = size; j > i; j--) {
+            a[j] = a[j - 1];
         }
-            a[i] = elem;
-            size++;
 
+        a[i] = elem;
+        size++;
     }
 
     //удаление по значению возвращает boolean
@@ -75,7 +73,6 @@ public class UserArrayList {
                 counter++;
                 if (!deleteAllEntries)
                     break;
-
             }
         }
         return counter != 0;
