@@ -45,6 +45,24 @@ public class UserLinkedList {
         return max;
     }
 
+    // ф-ия поиска узла с начала или с конца списка (зависит от переменной begin)
+    public Node findNodeFrom(int index, boolean begin) {
+        Node p;
+        if (begin) {
+            p = head;
+            for (int i = 0; i < index; i++) {
+                p = p.next;
+            }
+        } else {
+            p = tail;
+            for (int i = 0; i < count - index; i++) {
+                p = p.pred;
+            }
+        }
+
+        return p;
+    }
+
     public int get(int index) {
         if (index < 0 || index >= count)
             throw new IndexOutOfBoundsException();
@@ -54,14 +72,10 @@ public class UserLinkedList {
             return p.data;
         }
         if (index < count / 2) {
-            Node p = head;
-            for (int i = 0; i < index; i++) {
-                p = p.next;
-            }
+            Node p = findNodeFrom(index, true);
             return p.data;
         } else {
             Node p = tail;
-
             for (int i = 0; i < count - index - 1; i++) {
                 p = p.pred;
             }
@@ -82,165 +96,128 @@ public class UserLinkedList {
         count++;
     }
 
-    public boolean insert(int elem, int index) {
-        Node pNew = new Node(elem);
-
+    public void insert(int elem, int index) {
         if (index < 0 || index > count)
             throw new IndexOutOfBoundsException();
 
+        Node pNew = new Node(elem);
+
         if (index == count) {
             addLast(elem);
-            return true;
-        }
-
-        if (index == 0) {
+        } else if (index == 0) {
             addFirst(elem);
-            return true;
-        }
-
-        Node pAfter, pBefore;
-        if (index < count / 2) {
-            Node p = head;
-            for (int i = 0; i < index; i++) {
-                p = p.next;
-            }
-            pAfter = p;
-            pBefore = pAfter.pred;
-
         } else {
-            Node p = tail;
-            for (int i = 0; i < count - index; i++) {
-                p = p.pred;
+            Node p, pAfter, pBefore;
+            if (index < count / 2) {
+                p = findNodeFrom(index, true);
+                pAfter = p;
+                pBefore = pAfter.pred;
+
+            } else {
+                p = findNodeFrom(index, false);
+                pBefore = p;
+                pAfter = pBefore.next;
             }
-            pBefore = p;
-            pAfter = pBefore.next;
 
+            pNew.next = pAfter;
+            pNew.pred = pBefore;
+            pAfter.pred = pNew;
+            pBefore.next = pNew;
+            count++;
         }
-
-        pNew.next = pAfter;
-        pNew.pred = pBefore;
-        pAfter.pred = pNew;
-        pBefore.next = pNew;
-        count++;
-
-        return true;
-
     }
 
-    public boolean removeAt(int index) {
+    //использовать removeLast, First
+    //убрать boolean
+    //получение нужного узла с начала и с конца в отдельные функциц
+    public void removeAt(int index) {
         if (index < 0 || index >= count)
             throw new IndexOutOfBoundsException();
 
         Node p, pBefore, pAfter;
 
-        if (index == 0){
-            head = head.next;
-            head.pred = null;
-            count--;
-            return true;
-
-        }
-
-        if (index == count - 1){
-            tail = tail.pred;
-            tail.next = null;
-            count--;
-            return true;
-        }
-
-        if (index < count / 2) {
-            p = head;
-            for (int i = 0; i < index; i++) {
-                p = p.next;
-            }
+        if (index == 0) {
+            removeFirst();
+        } else if (index == count - 1) {
+            removeLast();
         } else {
-            p = tail;
-            for (int i = 0; i < count - index; i++) {
-                p = p.pred;
+            if (index < count / 2) {
+                p = findNodeFrom(index, true);
+            } else {
+                p = findNodeFrom(index, false);
             }
+            pAfter = p.next;
+            pBefore = p.pred;
+            pAfter.pred = pBefore;
+            pBefore.next = pAfter;
+            p.next = p.pred = null;
+            count--;
         }
-        pAfter = p.next;
-        pBefore = p.pred;
-        pAfter.pred = pBefore;
-        pBefore.next = pAfter;
-        p.next = p.pred = null;
-        count--;
-
-        return true;
-
     }
 
-    public boolean removeFirstEntry(int elem){
+    //убрать removeAt
+    public boolean removeFirstEntry(int elem) {
 
         if (count == 0)
             return false;
 
         Node p = head;
         int i = 0;
-        do{
-            if(p.data == elem){
+        do {
+            if (p.data == elem) {
                 removeAt(i);
                 return true;
             }
             i++;
-        }while((p = p.next) != null);
+        } while ((p = p.next) != null);
 
         return false;
     }
 
 
-    // не работает
-    public boolean removeAll(int elem){
-        if (count == 0)
-            return false;
+    public void removeAll(int elem) {
+        if (count != 0) {
+            Node p = head;
+            Node pSave = p;
+            // используется для удаления элемента по его индексу
+            int i = 0;
 
-        Node p = head;
-        Node pSave = p;
-        // используется для удаления элемента по его индексу
-        int i = 0;
-        // counter = 0, если не было ни одного удаления
-        int counter = 0;
-        do{
-            pSave = pSave.next;
-            if(p.data == elem){
-                removeAt(i);
-                counter++;
-                i--;
+            do {
+                pSave = pSave.next;
+                if (p.data == elem) {
+                    removeAt(i);
+                    i--;
+                }
+                p = pSave;
+                i++;
+            } while (pSave != null);
+
+        }
+    }
+
+
+    public void removeFirst() {
+        if (count != 0) {
+            if (count == 1) {
+                head = tail = null;
+            } else {
+                head = head.next;
+                head.pred = null;
             }
-            p = pSave;
-            i++;
-        }while(pSave != null);
-
-       return counter != 0;
+            count--;
+        }
     }
 
-
-    public boolean removeFirst(){
-        if (count == 0)
-            return false;
-
-        if(count == 1){
-            head = tail = null;
-        }else{
-            head = head.next;
-            head.pred = null;
+    public void removeLast() {
+        if (count != 0) {
+            if (count == 1) {
+                head = tail = null;
+            } else {
+                tail = tail.pred;
+                tail.next = null;
+            }
+            count--;
         }
-        count--;
-        return true;
-    }
-
-    public boolean removeLast(){
-        if (count == 0)
-            return false;
-
-        if(count == 1){
-            head = tail = null;
-        }else{
-            tail = tail.pred;
-            tail.next = null;
-        }
-        count--;
-        return true;
     }
 
 }
