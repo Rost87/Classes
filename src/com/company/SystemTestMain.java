@@ -1,6 +1,9 @@
 package com.company;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -127,26 +130,58 @@ public class SystemTestMain {
         return extendedNameList;
     }
 
+    // time в виде dd.MM.yyyy/HH:mm
+    public static Date stringToDate(String time){
+        DateFormat df = new SimpleDateFormat("dd.MM.yyyy/HH:mm");
+        Date date = new Date();
+        try{
+            date = df.parse(time);
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(date);
+            // прибавляем один день к дате прохождения курсов
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            date = calendar.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
+
+    public static String currentDateToString(){
+        DateFormat df = new SimpleDateFormat("dd.MM.yyyy/HH:mm");
+        Date today = Calendar.getInstance().getTime();
+        return df.format(today);
+    }
+
+
     // ф-ия, возвращающая true, если последний раз курс был пройден пользователем более 24 ч назад
-    static boolean checkCourseDate(String pathLoginCourseDate, String personLogin, String personCourseName, long personMillis){
+    static boolean checkCourseDate(String pathLoginCourseDate, String personLogin, String personCourseName){
         File file = new File(pathLoginCourseDate);
 
         try{
             // если файл создан
-            if(!file.createNewFile()){
+            if(file.exists()){
                 BufferedReader br = new BufferedReader(new FileReader(pathLoginCourseDate));
                 String line, login, courseName;
-                long millisec = 0;
                 String[] info;
+                Date courseDate = new Date();
+                int counter = 0;
                 while((line = br.readLine()) != null){
                     info = line.split(" ");
                     login = info[0];
                     courseName = info[1];
-                    if (personLogin.equals(login) && personCourseName.equals(courseName))
-                        millisec = Long.parseLong(info[2]);
+                    if (personLogin.equals(login) && personCourseName.equals(courseName)) {
+                        String dateStr = info[2];
+                        courseDate = stringToDate(dateStr);
+                        counter++;
+                    }
                 }
-                if((personMillis - millisec) > 24*60*60*1000)
+                Date today = Calendar.getInstance().getTime();
+                // если с момента предыдущего прохождения курса прошло 24 ч или курс еще ни разу не был пройден
+                if((today.compareTo(courseDate) != -1) || (counter == 0))
                     return true;
+
             } else{
                   return true;
             }
@@ -158,11 +193,12 @@ public class SystemTestMain {
     }
 
     // ф-ия для записи информации о дате прохождения курса
-    static void writeCourseDate(String pathLoginCourseDate, String personLogin, String personCourseName, long personMillis){
+    static void writeCourseDate(String pathLoginCourseDate, String personLogin, String personCourseName){
         File file = new File(pathLoginCourseDate);
         // использую конструктор, для записи в конец файла
         try(FileWriter writer = new FileWriter(file, true);){
-            writer.append(personLogin + " " + personCourseName + " " + personMillis + "\n");
+            String dateStr = currentDateToString();
+            writer.append(personLogin + " " + personCourseName + " " + dateStr + "\n");
         }catch(Exception e){
             System.out.println(e);
         }
@@ -200,10 +236,9 @@ public class SystemTestMain {
             String courseName = scan.nextLine();
             HashMap<Integer, Integer> questionAnswer;
             if (courseList.containsKey(courseName)) {
-                Calendar date = new GregorianCalendar();
-                long timeNow = date.getTimeInMillis();
+
                 //проверка даты прохождения курсов
-                if (checkCourseDate(pathLoginCourseDate, login, courseName, timeNow)){
+                if (checkCourseDate(pathLoginCourseDate, login, courseName)){
                     ArrayList<Question> questions = readQuestions(courseList.get(courseName), pathCourse);
                     questionAnswer = outputQuestion(questions);
                     // процент правильных ответов
@@ -212,7 +247,7 @@ public class SystemTestMain {
                     int estimate = estimate(percentRightAnswer);
                     System.out.println("Процент правильных ответов составил: " + percentRightAnswer);
                     System.out.println("Ваша оценка (по 5-ти бальной шкале): " + estimate);
-                    writeCourseDate(pathLoginCourseDate, login, courseName, date.getTimeInMillis());
+                    writeCourseDate(pathLoginCourseDate, login, courseName);
 
                 } else{
                     System.out.println("С момента последнего прохождения курса прощло менее 24 ч");
