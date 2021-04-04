@@ -1,14 +1,16 @@
-package com.company;
+package task_manager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 
 enum Role {
     EMPLOYEE, DIRECTOR
 }
 
 public class Employee {
-    private final int id;
+    private int id;
     private String firstName;
     private String lastName;
     private String phone;
@@ -17,8 +19,8 @@ public class Employee {
     private Calendar birthday;
     private ArrayList<Task> tasks = new ArrayList<>();
     private final Role role;
-    public static int nextId;
-    public static String path = "./PersonInfo/EmployeesTasks.txt";
+    private boolean isDeleted = false;
+   // public int totalNumberOfTasks;
 
     public Employee(String firstName, String lastName, String phone, String email, String password, Calendar birthday, Role role, int id) {
         this.firstName = firstName;
@@ -89,19 +91,14 @@ public class Employee {
         this.tasks = tasks;
     }
 
-    public ArrayList<Task> getTasks() {
-        return tasks;
+    public List<Task> getTasks() {
+        return  Collections.unmodifiableList(tasks);
     }
 
-    // добавление новой задачи, с предварительной проверкой существовования задачи с указанным id
+    // добавление новой задачи
     public void addTask(Task newTask){
-        int taskId = newTask.getTaskId();
-        Task task = this.getTaskById(taskId);
-        if (task !=null) {
-            rewriteTask(newTask);
-        } else{
-            this.getTasks().add(newTask);
-        }
+        ArrayList<Task> tasks = this.tasks;
+        tasks.add(newTask);
     }
 
     // поиск задачи по ее идентификатору
@@ -114,18 +111,20 @@ public class Employee {
         return null;
     }
 
-    // перезапись задачи
-    public void rewriteTask(Task newTask){
-        int taskId = newTask.getTaskId();
-        Task task = this.getTaskById(taskId);
-        task.setDescription(newTask.getDescription());
-        task.setExpectedTime(newTask.getExpectedTime());
-        task.setStatus(newTask.getStatus());
-    }
-
-
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }
 
